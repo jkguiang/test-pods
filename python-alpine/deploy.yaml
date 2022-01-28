@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: jguiang-test
+  name: jguiang-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: jguiang-test
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        k8s-app: jguiang-test
+    spec:
+      tolerations:
+      # - key: "nautilus.io/nsi"
+      #   operator: "Exists"
+      #   effect: "NoSchedule"
+      # - key: "node.kubernetes.io/unreachable"
+      #   operator: "Exists"
+      #   effect: "NoSchedule"
+      hostNetwork: True
+      hostPID: True
+      containers:
+      - image: python:3.7-alpine
+        command: [ "/bin/sh", "-c", "--" ]
+        args: [ "while true; do sleep 30; done;" ]
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 2095
+        name: jguiang-test
+        securityContext:
+          privileged: True
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 2Gi
+      nodeSelector:
+        # kubernetes.io/hostname: k8s-gen4-01.sdsc.optiputer.net
+        # kubernetes.io/hostname: k8s-gen4-07.ultralight.org
+        # kubernetes.io/hostname: dtn138.sl.startap.net
+        # kubernetes.io/hostname: nrp-02.nrp-nautilus.io
+      dnsPolicy: Default
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30

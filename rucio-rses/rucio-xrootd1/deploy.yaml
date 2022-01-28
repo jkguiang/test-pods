@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: rucio-rse-test-1
+  name: rucio-rse-test-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: rucio-rse-test-1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        k8s-app: rucio-rse-test-1
+    spec:
+      hostNetwork: True
+      hostPID: True
+      containers:
+        - env:
+            - name: OSG_FQDN
+              value: river-c034.ssl-hep.org
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          image: jguiang/us-cms-datalake-cluster:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 2095
+          name: rucio-rse-test-1
+          securityContext:
+            privileged: True
+          resources:
+            limits:
+              cpu: 16
+              memory: 128Gi
+            requests:
+              cpu: 5
+              memory: 30Gi
+          volumeMounts:
+            - mountPath: /rucio/
+              name: hosttmp
+            - mountPath: /etc/xrootd/xrootd-third-party-copy.cfg
+              name: rucio-rse-test-1-conf
+              subPath: xrootd-third-party-copy.cfg
+            - mountPath: /etc/xrootd/auth-file
+              name: rucio-rse-test-1-conf
+              subPath: auth-file
+            - mountPath: /etc/supervisord.d/10-xrootd.conf
+              name: rucio-rse-test-1-supervisor
+              subPath: supervisord.conf
+            - mountPath: /etc/grid-security/grid-mapfile
+              name: rucio-rse-test-1-conf
+              subPath: grid-mapfile
+            - mountPath: /etc/grid-security/certificates/5fca1cb1.0
+              name: rucio-rse-test-1-conf
+              subPath: 5fca1cb1.0
+            - mountPath: /etc/grid-security/certificates/5fca1cb1.signing_policy
+              name: rucio-rse-test-1-conf
+              subPath: 5fca1cb1.signing_policy
+            - mountPath: /etc/grid-security/hostcert.pem
+              name: certs
+              subPath: hostcert_xrd1.pem
+            - mountPath: /etc/grid-security/hostkey.pem
+              name: certs
+              subPath: hostcert_xrd1.key.pem
+      nodeSelector:
+        kubernetes.io/hostname: river-c034.ssl-hep.org
+      dnsPolicy: Default
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: hosttmp
+          hostPath:
+            path: /tmp
+            type: Directory
+        - name: certs
+          secret:
+            secretName: rucio-rse-test-1-self-certs
+            items:
+              - key: hostcert_xrd1.pem
+                path: hostcert_xrd1.pem
+              - key: hostcert_xrd1.key.pem
+                path: hostcert_xrd1.key.pem
+            defaultMode: 0644
+        - name: rucio-rse-test-1-conf
+          configMap: 
+            name: rucio-rse-test-1-conf
+            items:
+              - key: xrootd-third-party-copy.cfg
+                path: xrootd-third-party-copy.cfg
+              - key: grid-mapfile
+                path: grid-mapfile
+              - key: auth-file
+                path: auth-file
+              - key: 5fca1cb1.0
+                path: 5fca1cb1.0
+              - key: 5fca1cb1.signing_policy
+                path: 5fca1cb1.signing_policy
+        - name: rucio-rse-test-1-supervisor
+          configMap: 
+            name: rucio-rse-test-1-supervisor
+            items:
+              - key: supervisord.conf
+                path: supervisord.conf

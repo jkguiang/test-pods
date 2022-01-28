@@ -1,0 +1,26 @@
+resources:
+  - deploy.yaml
+
+configMapGenerator:
+  - name: rucio-rse-test-1-conf
+    files:
+      - xrootd-third-party-copy.cfg
+      - grid-mapfile
+      - auth-file
+      - 5fca1cb1.0
+      - 5fca1cb1.signing_policy
+  - name: rucio-rse-test-1-supervisor
+    files:
+      - supervisord.conf
+
+secretGenerator:
+  - name: rucio-rse-test-1-self-certs
+    files:
+      - hostcert_xrd1.pem
+      - hostcert_xrd1.key.pem
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+commonLabels:
+  app: rucio-rse-test-1

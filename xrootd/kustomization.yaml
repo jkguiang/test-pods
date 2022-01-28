@@ -1,0 +1,23 @@
+resources:
+  - deploy.yaml
+
+configMapGenerator:
+  - name: rucio-rse-test-conf
+    files:
+      - xrootd-third-party-copy.cfg
+      - auth-file-noauth
+      - dumbfix.sh
+  - name: rucio-rse-test-supervisor
+    files:
+      - supervisord.conf
+
+secretGenerator:
+  - name: rucio-rse-test-self-certs
+    files:
+      - OSG-Test-CA.pem
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+commonLabels:
+  app: rucio-rse-test
